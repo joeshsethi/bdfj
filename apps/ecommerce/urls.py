@@ -10,8 +10,8 @@ urlpatterns = [
 #     url(r'^addtocart$', views.addtocart),
 #     url(r'^cart$', views.cart),
 #     url(r'^checkout$', views.checkout), #This will login, reg, and also payment
-#     url(r'^admin$', views.admin),
-#     url(r'^orders$', views.orders),
+    url(r'^admin$', views.admin),
+    url(r'^orders$', views.orders),
 #     url(r'^orders/(?P<id>\d+)/$', views.orders),
 #     url(r'^inventory$', views.inventory),
 ]

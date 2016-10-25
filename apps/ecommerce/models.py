@@ -7,8 +7,62 @@ ONLY_LETTERS = re.compile('\d') #checks for a digit
 ONECAP_ONENUM = re.compile('^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$') #one capital one number
 
 class UserManager(models.Manager):
-    pass
+    def login(self, post):
+        user_list = User.objects.filter(email = post['email'])
+        if user_list:
+            user = user_list[0]
+            if bcrypt.hashpw(post['password'].encode(), user.password.encode()) == user.password:
 
+                return user
+        return None
+
+    def register(self, post):
+        encrypted_password = bcrypt.hashpw(post['password'].encode(), bcrypt.gensalt())
+        AdminUser.objects.create(name = post['name'], username = post['username'], email = post['email'], password = encrypted_password )
+
+    def validate(self, post):
+        errors = []
+
+        if len(post['name']) == 0:
+            errors.append("Name is required")
+        elif len(post['name']) < 3:
+            errors.append("Name must be at least 3 characters")
+        elif not post['name'].isalpha():
+            errors.append("Only letters, BOO")
+
+        if len(post['alias']) == 0:
+            errors.append("Alias is required")
+        elif len(post['alias']) < 3:
+            errors.append("Alias must be at least 3 characters")
+        elif not post['alias'].isalpha():
+            errors.append("Only letters, BOO")
+
+        if len(post['email']) == 0:
+            errors.append("Email is required")
+        elif not EMAIL_REGEX.match(post['email']):
+            errors.append("Please enter a valid email")
+
+        if len(post['password']) == 0:
+            errors.append("Must enter a password")
+        elif len(post['password']) < 8:
+            errors.append("Password must have at least 8 characters")
+        elif post['password'] != post['confirm_pass']:
+            errors.append("Password and confirmation must match")
+
+        if len(User.objects.filter(email = post['email'])) > 0 :
+            errors.append("Email address is unavailable!")
+
+        return errors
+
+
+class AdminUser(models.Model):
+    name = models.CharField(max_length = 45)
+    username = models.CharField(max_length = 45)
+    email = models.EmailField(max_length= 60)
+    password = models.CharField(max_length = 100)
+    created_at = models.DateTimeField(auto_now_add= True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = UserManager()
 
 class Inventory(models.Model):
     count = models.IntegerField()
